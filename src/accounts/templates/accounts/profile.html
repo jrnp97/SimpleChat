@@ -7,13 +7,61 @@
 <body>
 Hi {{ request.user }}!
 <hr>
-<label for="chat-room-active">Chat-room Name</label>
-<input type="text" id="chat-room-active" />
+<label for="chat-room-active">Chat-room</label>
+<input type="text" id="chat-room-active" placeholder="Name"/>
+<button type="submit" id="enter_room">Enter</button>
 <hr>
 <div id="chat_room" hidden>
-    <textarea style="height: 200px;width: 200px" disabled></textarea>
+    <textarea id="chat_messages" cols="100" rows="50"
+              style="resize: none; height: 100px"
+              disabled></textarea>
     <hr>
     <input type="text" id="message">
+    <input type="submit" id="message-submit">
 </div>
+<script>
+    const enterRoomBtn = document.querySelector('#enter_room');
+    const roomNameInput = document.querySelector('#chat-room-active');
+    const chatRoom = document.querySelector('#chat_room')
+    enterRoomBtn.addEventListener('click', function (e) {
+        let room_name = roomNameInput.value.trim();
+        if (room_name) {
+            alert(room_name);
+            chatRoom.hidden = false;
+            initializeRoom(room_name);
+        } else {
+            alert(`Not valid room name: ${room_name}`);
+        }
+    })
+
+    function initializeRoom(room_name) {
+        const chatSocket = new WebSocket(`ws://${window.location.host}/ws/chat/${room_name}/`);
+        chatSocket.onmessage = function (e) {
+            const data = JSON.parse(e.data);
+            document.querySelector('#chat_messages').value += (data.message + '\n');
+        };
+
+        chatSocket.onclose = function (e) {
+            console.error('Chat socket closed unexpectedly');
+        };
+        document.querySelector('#message').focus();
+        document.querySelector('#message').onkeyup = function (e) {
+            if (e.keyCode === 13) {  // enter, return
+                document.querySelector('#message-submit').click();
+            }
+        };
+
+        document.querySelector('#message-submit').onclick = function (e) {
+            const messageInputDom = document.querySelector('#message');
+            const message = messageInputDom.value;
+            chatSocket.send(JSON.stringify({
+                'message': message
+            }));
+            messageInputDom.value = '';
+        };
+        return chatSocket
+    }
+
+</script>
 </body>
 </html>

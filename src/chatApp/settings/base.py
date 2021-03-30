@@ -37,6 +37,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'channels',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -84,6 +85,9 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
+        'TEST': {
+            'NAME': BASE_DIR / 'db_test.sqlite3',
+        }
     }
 }
 
@@ -129,3 +133,15 @@ STATIC_URL = '/static/'
 # AUTH
 AUTH_USER_MODEL = 'accounts.User'
 
+# Channels
+ASGI_APPLICATION = 'chatApp.asgi.application'
+
+# Channels Redis
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            'hosts': [(env.get_value('DJ_REDIS_HOST', default='redis'), 6379)],
+        },
+    },
+}

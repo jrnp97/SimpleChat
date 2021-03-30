@@ -2,6 +2,8 @@
 version: "3"
 
 services:
+  redis:
+    image: redis:5
   web:
     build:
       context: .
@@ -14,5 +16,7 @@ services:
       - .envs/local.env
     volumes:
       - ./src:/src
+    depends_on:
+      - redis
 volumes:
   src:
