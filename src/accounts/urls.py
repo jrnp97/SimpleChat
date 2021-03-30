@@ -10,8 +10,13 @@ from django.contrib.auth.views import LogoutView
 
 from accounts.views import RegistrationView
 
+app_name = 'accounts'
 urlpatterns = [
-    path('login/', LoginView.as_view(), name='login_uri'),
+    path(
+        'login/',
+        LoginView.as_view(redirect_authenticated_user=True),
+        name='login_uri'
+    ),
     path('logout/', LogoutView.as_view(), name='logout_uri'),
     path('register/', RegistrationView.as_view(), name='registration_uri'),
     path(

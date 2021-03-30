@@ -17,7 +17,10 @@ from django.contrib import admin
 from django.urls import path
 from django.urls import include
 
+from django.views.generic.base import RedirectView
+
 urlpatterns = [
+    path('', RedirectView.as_view(url='/accounts/login')),
     path('secrect/', admin.site.urls),
-    path('accounts/', include('accounts.urls')),
+    path('accounts/', include('accounts.urls', namespace='accounts')),
 ]

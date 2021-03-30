@@ -1,32 +1,89 @@
 <!DOCTYPE html>
 <html lang="en">
+{% load bootstrap4 %}
+
+{% bootstrap_css %}
+{% bootstrap_javascript jquery='full' %}
 <head>
-    <meta charset="UTF-8">
-    <title>{{ request.user.username }}</title>
+    <title> Main - chatApp</title>
 </head>
+
 <body>
-Hi {{ request.user }}!
-<hr>
-<label for="chat-room-active">Chat-room</label>
-<input type="text" id="chat-room-active" placeholder="Name"/>
-<button type="submit" id="enter_room">Enter</button>
-<hr>
-<div id="chat_room" hidden>
-    <textarea id="chat_messages" cols="100" rows="50"
-              style="resize: none; height: 100px"
-              disabled></textarea>
+<header class="container">
+    <div class="row d-flex justify-content-between">
+        <div class="col-md-6">
+            <h1>Hi {{ request.user }}!</h1>
+        </div>
+        <div class="col-md-6 text-right">
+            <a href="{% url 'accounts:logout_uri' %}" class="btn btn-warning">Logout</a>
+        </div>
+    </div>
+</header>
+<main class="container">
+    {% bootstrap_messages %}
     <hr>
-    <input type="text" id="message">
-    <input type="submit" id="message-submit">
-</div>
-<script>
-    const enterRoomBtn = document.querySelector('#enter_room');
-    const roomNameInput = document.querySelector('#chat-room-active');
-    const chatRoom = document.querySelector('#chat_room')
+    <div class="row">
+        <div class="form-inline">
+            <div class="form-group mx-sm-3 mb-2">
+                <label for="chat_room_config" class="sr-only">Password</label>
+                <input type="text" class="form-control" id="chat_room_config"
+                       placeholder="Chat Room Name">
+            </div>
+            <button type="submit" id="chat_room_config_submit"
+                    class="btn btn-primary mb-2">Go to room!
+            </button>
+        </div>
+    </div>
+    <hr>
+    <div class="row" id="chat_room" hidden>
+        <div class="col-md-10">
+            <div class="card">
+                <div class="card-header" id="chat_room_header"></div>
+
+                <div class="card-body">
+                    <ul class="list-group" id="chat_room_messages">
+
+                    </ul>
+                </div>
+
+                <div class="card-footer">
+                    <div class="form-inline d-flex justify-content-end">
+                        <div class="form-group mx-sm-3 mb-2">
+                            <input type="text"
+                                   class="form-control form-control-lg"
+                                   id="message_input"
+                                   aria-label="message input"
+                                   placeholder="Type a message here!">
+                        </div>
+                        <button type="submit" class="btn btn-warning mb-2"
+                                id="message_submit">Send
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="col-sm-2 col-md-2 col-lg-2"
+             style="border-left-style: solid; border-left-color: #4f4f4f">
+            <h2>Users</h2>
+            <ul>
+                <li>{{ request.user }}</li>
+            </ul>
+        </div>
+    </div>
+</main>
+
+<script type="application/javascript">
+    const enterRoomBtn = document.querySelector('#chat_room_config_submit');
+    const roomNameInput = document.querySelector('#chat_room_config');
+
+    const chatRoom = document.querySelector('#chat_room');
+    const chatRoomHeader = document.querySelector('#chat_room_header');
+
     enterRoomBtn.addEventListener('click', function (e) {
         let room_name = roomNameInput.value.trim();
         if (room_name) {
-            alert(room_name);
             chatRoom.hidden = false;
             initializeRoom(room_name);
         } else {
@@ -34,32 +91,50 @@ Hi {{ request.user }}!
         }
     })
 
+    function insertMessage(message_data) {
+        const message_list = document.querySelector('#chat_room_messages')
+        const template = new DOMParser().parseFromString(
+            `<li class="list-group-item"><p><b>${message_data.author}</b> on ${message_data.timestamp}: ${message_data.message}</p></li>`,
+            'text/html'
+        )
+        if (message_list.childElementCount >= 50) {
+            message_list.removeChild(message_list.childNodes[0])
+        }
+        message_list.appendChild(
+            template.body.firstElementChild
+        );
+    }
+
     function initializeRoom(room_name) {
         const chatSocket = new WebSocket(`ws://${window.location.host}/ws/chat/${room_name}/`);
+        const message_input = document.querySelector('#message_input');
+        const message_submit = document.querySelector('#message_submit');
+
+        message_input.focus();
+        message_input.onkeyup = function (e) {
+            if (e.keyCode === 13) {  // enter, return
+                message_submit.click();
+            }
+        }
+
+        message_submit.onclick = function (e) {
+            chatSocket.send(JSON.stringify({
+                'message': message_input.value
+            }));
+            message_input.value = '';
+        };
+
         chatSocket.onmessage = function (e) {
             const data = JSON.parse(e.data);
             console.debug("RESPONSE SERVER", data)
-            document.querySelector('#chat_messages').value += (data.message + '\n');
+            insertMessage(data)
         };
 
         chatSocket.onclose = function (e) {
             console.error('Chat socket closed unexpectedly');
-        };
-        document.querySelector('#message').focus();
-        document.querySelector('#message').onkeyup = function (e) {
-            if (e.keyCode === 13) {  // enter, return
-                document.querySelector('#message-submit').click();
-            }
+            chatRoom.hidden = true
         };
 
-        document.querySelector('#message-submit').onclick = function (e) {
-            const messageInputDom = document.querySelector('#message');
-            const message = messageInputDom.value;
-            chatSocket.send(JSON.stringify({
-                'message': message
-            }));
-            messageInputDom.value = '';
-        };
         return chatSocket
     }
 

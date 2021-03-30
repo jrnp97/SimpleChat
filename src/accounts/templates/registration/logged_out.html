@@ -1,0 +1,17 @@
+{% load bootstrap4 %}
+
+{% bootstrap_css %}
+{% bootstrap_javascript jquery='full' %}
+{% bootstrap_messages %}
+
+<main class="container">
+    <hr>
+    <h1 class="text-center">Logout</h1>
+    <hr>
+    <div class="row d-flex justify-content-center align-items-center">
+        <div class="class-md-5">
+            <a class="btn btn-warning" href="{% url 'accounts:login_uri' %}">Register</a>
+        </div>
+    </div>
+
+</main>

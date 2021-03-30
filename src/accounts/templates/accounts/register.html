@@ -1,14 +1,26 @@
+{% load bootstrap4 %}
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Register User</title>
-</head>
-<body>
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <input type="submit" value="Register!">
-</form>
-</body>
-</html>
+
+
+{% bootstrap_css %}
+{% bootstrap_javascript jquery='full' %}
+{% bootstrap_messages %}
+
+<main class="container">
+    <hr>
+    <h1 class="text-center">Register User</h1>
+    <hr>
+    <div class="row d-flex justify-content-center align-items-center">
+        <div class="class-md-5">
+            <form method="post" class="form">
+                {% csrf_token %}
+                {% bootstrap_form form %}
+                {% buttons %}
+                    <button type="submit" class="btn btn-primary">Register</button>
+                {% endbuttons %}
+            </form>
+        </div>
+    </div>
+
+</main>

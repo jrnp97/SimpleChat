@@ -1,17 +1,33 @@
+{% load bootstrap4 %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Login</title>
+    {% bootstrap_css %}
+    {% bootstrap_javascript jquery='full' %}
+    <title> Login - chatApp</title>
 </head>
+
 <body>
-{% for message in messages %}
-    <p>{{ message }}</p>
-{% endfor %}
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Login</button>
-</form>
+<main class="container">
+    {% bootstrap_messages %}
+    <hr>
+    <h1 class="text-center">ChatApp</h1>
+    <hr>
+    <div class="row d-flex justify-content-center align-items-center">
+        <div class="class-md-5">
+            <form method="post" class="form">
+                {% csrf_token %}
+                {% bootstrap_form form %}
+                {% buttons %}
+                    <a class="btn btn-warning"
+                       href="{% url 'accounts:registration_uri' %}">Register</a>
+                    <button type="submit" class="btn btn-primary">Login
+                    </button>
+                {% endbuttons %}
+            </form>
+        </div>
+    </div>
+
+</main>
 </body>
 </html>
