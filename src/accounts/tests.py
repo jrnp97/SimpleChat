@@ -1,10 +1,14 @@
 """ Module to define app tests """
 
+from django.conf import settings
+
 from django.test import Client
 from django.test import TestCase
 
+from django.contrib.messages import get_messages
+
 from django.contrib.auth import get_user_model
-from django.contrib.auth.hashers import is_password_usable
+from django.contrib.auth.hashers import check_password
 
 User = get_user_model()
 
@@ -14,22 +18,26 @@ class UserRegistrationTestCase(TestCase):
     REGISTRATION_URI = '/accounts/register/'
 
     def setUp(self):
-        self.client = Client(enforce_csrf_checks=True)
+        self.client = Client(enforce_csrf_checks=False)
 
     def tearDown(self):
         User.objects.all().delete()
 
-    def test_registration_uri_should_only_support_post_method(self):
+    def test_registration_uri_should_only_support_post_and_get_method(self):
         """ Registration uri only must support POST HTTP-verb """
         bad_verbs = [
-            'get',
+            'delete',
             'head',
             'put',
             'options',
         ]
         for verb in bad_verbs:
             res = getattr(self.client, verb)(path=self.REGISTRATION_URI)
-            self.assertEqual(res.status_code, 405)  # Method not allowed
+            self.assertEqual(
+                res.status_code,
+                405,
+                msg=f'unexpected response for verb: {verb}',
+            )  # Method not allowed
 
     def test_registration_should_create_user_with_username_and_password(self):
         """ Registration process only need username, password and password
@@ -37,7 +45,7 @@ class UserRegistrationTestCase(TestCase):
         form_data = {
             'username': 'test_user',
             'password': 'UltraSecretPassword',
-            'password_confirmation': 'UltraSecretPassword',
+            'confirm_password': 'UltraSecretPassword',
         }
         self.assertFalse(
             User.objects.filter(username=form_data['username']).exists()
@@ -46,14 +54,30 @@ class UserRegistrationTestCase(TestCase):
             path=self.REGISTRATION_URI,
             data=form_data,
         )
-        self.assertContains(
-            response=response,
-            text=f'User: {form_data["username"]} was created successfully.',
-            status_code=201,  # Created
+        self.assertEqual(
+            302,  # Redirect to login page
+            response.status_code,
         )
+        messages = list(get_messages(response.wsgi_request))
+        self.assertEqual(
+            1,
+            messages.__len__(),
+        )
+        self.assertEqual(
+            f'User: {form_data["username"]} was created successfully.',
+            str(messages[0]),
+        )
+        self.assertEqual(
+            settings.LOGIN_URL,
+            response.url,
+        )
+
         created_user = User.objects.get(username=form_data['username'])
-        self.assertTrue(is_password_usable(created_user.password))
-        self.assertTrue(created_user.active)
+        self.assertTrue(check_password(
+            password=form_data['password'],
+            encoded=created_user.password,
+        ))
+        self.assertTrue(created_user.is_active)
         self.assertFalse(created_user.is_superuser)
         self.assertFalse(created_user.is_staff)
 
