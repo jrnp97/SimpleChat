@@ -1,0 +1,18 @@
+# Docker compose configuration to run project locally
+version: "3"
+
+services:
+  web:
+    build:
+      context: .
+      args:
+        - REQUIREMENT_PATH="requirements/local.txt"
+    entrypoint: /entrypoint.sh
+    ports:
+      - "8000:8000"
+    env_file:
+      - .envs/local.env
+    volumes:
+      - ./src:/src
+volumes:
+  src:
