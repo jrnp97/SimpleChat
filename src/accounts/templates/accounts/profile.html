@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ request.user.username }}</title>
+</head>
+<body>
+Hi {{ request.user }}!
+<hr>
+<label for="chat-room-active">Chat-room Name</label>
+<input type="text" id="chat-room-active" />
+<hr>
+<div id="chat_room" hidden>
+    <textarea style="height: 200px;width: 200px" disabled></textarea>
+    <hr>
+    <input type="text" id="message">
+</div>
+</body>
+</html>
