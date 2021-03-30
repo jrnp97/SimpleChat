@@ -17,7 +17,8 @@ from environ import Env
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 env = Env(
-    DJ_DEBU=(bool, False),
+    DJ_DEBUG=(bool, False),
+    DJ_RABBITMQ_DEBUG=(bool, False),
 )
 Env.read_env()
 
@@ -145,3 +146,8 @@ CHANNEL_LAYERS = {
         },
     },
 }
+
+# Celery config
+CELERY_BROKER_URL = env('DJ_RABBITMQ_BROKER')
+CELERY_TASK_ALWAYS_EAGER = env('DJ_RABBITMQ_DEBUG')
+CELERY_WORKER_CONCURRENCY = 5

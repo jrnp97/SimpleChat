@@ -18,7 +18,7 @@ from channels.routing import URLRouter
 
 import chat.routing
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'chatApp.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'chatApp.settings.production')
 
 application = ProtocolTypeRouter({
     'http': get_asgi_application(),
