@@ -38,6 +38,7 @@ Hi {{ request.user }}!
         const chatSocket = new WebSocket(`ws://${window.location.host}/ws/chat/${room_name}/`);
         chatSocket.onmessage = function (e) {
             const data = JSON.parse(e.data);
+            console.debug("RESPONSE SERVER", data)
             document.querySelector('#chat_messages').value += (data.message + '\n');
         };
 

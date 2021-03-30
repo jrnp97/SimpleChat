@@ -3,6 +3,13 @@ import re
 import time
 import requests
 
+from asgiref.sync import async_to_sync
+
+from django.utils.datetime_safe import datetime
+
+from channels.layers import get_channel_layer
+
+from chat.constants import BOT_NAME
 from chat.constants import STOCK_MESSAGE_RGX
 
 
@@ -40,6 +47,15 @@ def is_stock_bot_message(message):
     return bool(re.match(STOCK_MESSAGE_RGX, message))
 
 
-# TODO: Finish
-def send_message_to_chat_room(msg, room_name, author='FinnBot'):
+# TODO: Test
+def send_message_to_chat_room(msg, room_name, author=BOT_NAME):
     """ Function to send message to chat-room """
+    channel_layer = get_channel_layer()
+    async_to_sync(channel_layer.group_send)(
+        group=room_name,
+        message={
+            'type': 'chat_message',
+            'message': msg,
+            'author': author,
+        }
+    )

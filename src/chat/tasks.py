@@ -10,7 +10,7 @@ from requests.exceptions import HTTPError
 from requests.exceptions import ConnectTimeout
 from requests.exceptions import ConnectionError
 
-from chatApp import celery_app as app
+from celery import shared_task
 
 from chat.exceptions import BadFormatStockCsvException
 
@@ -22,7 +22,7 @@ from chat.utils import request_with_retry
 from chat.utils import send_message_to_chat_room
 
 
-@app.task
+@shared_task
 def stock_searching(stock, room_name):
     """ Task to perform stock info search """
     try:
