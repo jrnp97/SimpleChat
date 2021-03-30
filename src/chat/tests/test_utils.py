@@ -1,4 +1,5 @@
-""" Module to including chat-testing """
+""" Module to define tests for chat.utils """
+
 from django.test import TestCase
 
 import requests
@@ -7,38 +8,6 @@ from unittest.mock import Mock
 from unittest.mock import patch
 
 from chat import utils
-
-
-class BotStockCommandManagement(TestCase):
-    """ Test case testing the components to handle
-        /stock=<stock> command on a chat room, that are:
-        * stock_command_task: A async celery tasks to look up stock information
-        and send message back to chat-room
-        * chat_room_web_socket: A Async WebSocket Consumer processing all chat
-        message, and send stock command tasks to bot.
-    """
-
-    @property
-    def stock_command_task(self):
-        from chat.tasks import stock_searching
-        return stock_searching
-
-    def test_stock_command_task_should_send_failed_message_on_failure(self):
-        """ Testing stock command should handle failure on logic and send a
-        failure message to chat-room, possible known failures:
-            * Bad external service response:
-                - down service (connection error or timeout).
-                - bad response.
-            * Bad csv parsing processing:
-                - unexpected format.
-                - bad formatted file.
-        for all errors the bot must send a standard message to chat-room:
-            - "Unable to get stock information, please retry."
-                (not report functionality)
-        """
-
-    def test_stock_command_task_should_send_stock_info_formatted_to_chat(self):
-        """ """
 
 
 class TestUtilities(TestCase):

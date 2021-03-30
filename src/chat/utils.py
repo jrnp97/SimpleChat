@@ -38,3 +38,8 @@ def is_stock_bot_message(message):
     """
     # Match cause must be at the begin
     return bool(re.match(STOCK_MESSAGE_RGX, message))
+
+
+# TODO: Finish
+def send_message_to_chat_room(msg, room_name, author='FinnBot'):
+    """ Function to send message to chat-room """
