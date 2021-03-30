@@ -6,7 +6,7 @@ services:
     build:
       context: .
       args:
-        - REQUIREMENT_PATH="requirements/local.txt"
+        - REQUIREMENT_PATH=requirements/local.txt
     entrypoint: /entrypoint.sh
     ports:
       - "8000:8000"
