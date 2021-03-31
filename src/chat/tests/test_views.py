@@ -53,7 +53,6 @@ class TestChatRoomView(TestCase):
             response.status_code,
             msg=u'must redirect to login page',
         )
-        import pdb;pdb.set_trace()
         self.assertEqual(
             settings.LOGIN_URL,
             urlparse.urlsplit(response.url).path,
