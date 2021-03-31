@@ -23,4 +23,5 @@ urlpatterns = [
     path('', RedirectView.as_view(url='/accounts/login')),
     path('secrect/', admin.site.urls),
     path('accounts/', include('accounts.urls', namespace='accounts')),
+    path('chat/', include('chat.urls', namespace='chat')),
 ]

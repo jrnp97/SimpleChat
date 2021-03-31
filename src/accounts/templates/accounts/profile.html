@@ -9,6 +9,7 @@
 </head>
 
 <body>
+<hr>
 <header class="container">
     <div class="row d-flex justify-content-between">
         <div class="col-md-6">
@@ -23,53 +24,14 @@
     {% bootstrap_messages %}
     <hr>
     <div class="row">
-        <div class="form-inline">
+        <div class="col-md-12 form-inline d-flex justify-content-center">
             <div class="form-group mx-sm-3 mb-2">
-                <label for="chat_room_config" class="sr-only">Password</label>
                 <input type="text" class="form-control" id="chat_room_config"
-                       placeholder="Chat Room Name">
+                       placeholder="Chat Room Name" aria-label="chat room name">
             </div>
             <button type="submit" id="chat_room_config_submit"
                     class="btn btn-primary mb-2">Go to room!
             </button>
-        </div>
-    </div>
-    <hr>
-    <div class="row" id="chat_room" hidden>
-        <div class="col-md-10">
-            <div class="card">
-                <div class="card-header" id="chat_room_header"></div>
-
-                <div class="card-body">
-                    <ul class="list-group" id="chat_room_messages">
-
-                    </ul>
-                </div>
-
-                <div class="card-footer">
-                    <div class="form-inline d-flex justify-content-end">
-                        <div class="form-group mx-sm-3 mb-2">
-                            <input type="text"
-                                   class="form-control form-control-lg"
-                                   id="message_input"
-                                   aria-label="message input"
-                                   placeholder="Type a message here!">
-                        </div>
-                        <button type="submit" class="btn btn-warning mb-2"
-                                id="message_submit">Send
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-        </div>
-
-        <div class="col-sm-2 col-md-2 col-lg-2"
-             style="border-left-style: solid; border-left-color: #4f4f4f">
-            <h2>Users</h2>
-            <ul>
-                <li>{{ request.user }}</li>
-            </ul>
         </div>
     </div>
 </main>
@@ -78,65 +40,20 @@
     const enterRoomBtn = document.querySelector('#chat_room_config_submit');
     const roomNameInput = document.querySelector('#chat_room_config');
 
-    const chatRoom = document.querySelector('#chat_room');
-    const chatRoomHeader = document.querySelector('#chat_room_header');
+    roomNameInput.onkeyup = function (e) {
+        if (e.keyCode === 13){
+            enterRoomBtn.click();
+        }
+    }
 
     enterRoomBtn.addEventListener('click', function (e) {
         let room_name = roomNameInput.value.trim();
         if (room_name) {
-            chatRoom.hidden = false;
-            initializeRoom(room_name);
+            window.open(`/chat/${room_name}/`, '_blank');
         } else {
             alert(`Not valid room name: ${room_name}`);
         }
     })
-
-    function insertMessage(message_data) {
-        const message_list = document.querySelector('#chat_room_messages')
-        const template = new DOMParser().parseFromString(
-            `<li class="list-group-item"><p><b>${message_data.author}</b> on ${message_data.timestamp}: ${message_data.message}</p></li>`,
-            'text/html'
-        )
-        if (message_list.childElementCount >= 50) {
-            message_list.removeChild(message_list.childNodes[0])
-        }
-        message_list.appendChild(
-            template.body.firstElementChild
-        );
-    }
-
-    function initializeRoom(room_name) {
-        const chatSocket = new WebSocket(`ws://${window.location.host}/ws/chat/${room_name}/`);
-        const message_input = document.querySelector('#message_input');
-        const message_submit = document.querySelector('#message_submit');
-
-        message_input.focus();
-        message_input.onkeyup = function (e) {
-            if (e.keyCode === 13) {  // enter, return
-                message_submit.click();
-            }
-        }
-
-        message_submit.onclick = function (e) {
-            chatSocket.send(JSON.stringify({
-                'message': message_input.value
-            }));
-            message_input.value = '';
-        };
-
-        chatSocket.onmessage = function (e) {
-            const data = JSON.parse(e.data);
-            console.debug("RESPONSE SERVER", data)
-            insertMessage(data)
-        };
-
-        chatSocket.onclose = function (e) {
-            console.error('Chat socket closed unexpectedly');
-            chatRoom.hidden = true
-        };
-
-        return chatSocket
-    }
 
 </script>
 </body>

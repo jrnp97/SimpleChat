@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+{% load bootstrap4 %}
+
+{% bootstrap_css %}
+{% bootstrap_javascript jquery='full' %}
+<head>
+    <title> Chat - {{ room_name }}</title>
+</head>
+
+<body>
+<header class="text-center">
+    <h1>Welcome to {{ room_name }}!</h1>
+</header>
+<hr>
+<main class="container">
+    <div class="row" id="chat_room">
+        <div class="col-md-10">
+            <div class="card">
+                <!--<div class="card-header" id="chat_room_header">{{ room_name }}</div>-->
+
+                <div class="card-body" id="chat_container"
+                     style="max-height: 500px; overflow: scroll">
+                    <ul class="list-group" id="chat_room_messages">
+
+                    </ul>
+                </div>
+
+                <div class="card-footer">
+                    <div class="form-inline d-flex justify-content-end">
+                        <div class="form-group mx-sm-3 mb-2">
+                            <input type="text"
+                                   class="form-control form-control-lg"
+                                   id="message_input"
+                                   aria-label="message input"
+                                   placeholder="Type a message here!">
+                        </div>
+                        <button type="submit" class="btn btn-warning mb-2"
+                                id="message_submit">Send
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="col-sm-2 col-md-2 col-lg-2"
+             style="border-left-style: solid; border-left-color: #4f4f4f">
+            <h2>Users</h2>
+            <ul>
+                <li>{{ request.user }}</li>
+            </ul>
+        </div>
+    </div>
+</main>
+
+<script type="application/javascript">
+    const room_name = '{{ room_name }}';
+    const chat_container = document.querySelector('#chat_container')
+    initializeRoom(room_name);
+
+    function updateScroll() {
+        chat_container.scrollTop = chat_container.scrollHeight;
+    }
+
+    function insertMessage(message_data) {
+        const message_list = document.querySelector('#chat_room_messages')
+        const template = new DOMParser().parseFromString(
+            `<li class="list-group-item"><p><b>${message_data.author}</b> on ${message_data.timestamp}: ${message_data.message}</p></li>`,
+            'text/html'
+        )
+        if (message_list.childElementCount >= 50) {
+            message_list.removeChild(message_list.childNodes[0])
+        }
+        message_list.appendChild(
+            template.body.firstElementChild
+        );
+        updateScroll()
+    }
+
+    function initializeRoom(room_name) {
+        const chatSocket = new WebSocket(`ws://${window.location.host}/ws/chat/${room_name}/`);
+        const message_input = document.querySelector('#message_input');
+        const message_submit = document.querySelector('#message_submit');
+
+        message_input.focus();
+        message_input.onkeyup = function (e) {
+            if (e.keyCode === 13) {  // enter, return
+                message_submit.click();
+            }
+        }
+
+        message_submit.onclick = function (e) {
+            if (message_input.value.trim().length === 0) {
+                alert('Insert a valid Message');
+            } else {
+                chatSocket.send(JSON.stringify({
+                    'message': message_input.value
+                }));
+                message_input.value = '';
+            }
+
+        };
+
+        chatSocket.onmessage = function (e) {
+            const data = JSON.parse(e.data);
+            console.debug("RESPONSE SERVER", data)
+            insertMessage(data)
+        };
+
+        chatSocket.onclose = function (e) {
+            console.error('Chat socket closed unexpectedly');
+        };
+
+        return chatSocket
+    }
+
+</script>
+</body>
+</html>

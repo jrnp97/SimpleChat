@@ -16,10 +16,14 @@ other dependencies could see on requirements/*.txt files.
 
 * Simple user registration.
 * User login.
-* Room-Chat.
+* Room-Chat (Multiples).
 * Financial Bot
     - support: `/stock=stock_code` command.
 
+## TODO
+
+* persistent messages after close or reload chat.
+* user enter notification.
 
 ## Installation
 
